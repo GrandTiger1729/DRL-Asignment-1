@@ -3,6 +3,7 @@ import numpy as np
 import pickle
 
 from taxi_env import *
+from state import *
 from model import Model
 
 with open("model.pkl", "rb") as f:

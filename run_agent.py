@@ -1,7 +1,7 @@
 import importlib.util
-import time
 
 from taxi_env import TaxiEnv
+from state import *
 
 def run_agent(agent_file, env_config, render=False):
     spec = importlib.util.spec_from_file_location("student_agent", agent_file)
@@ -18,7 +18,6 @@ def run_agent(agent_file, env_config, render=False):
 
     if render:
         env.render_env((taxi_row, taxi_col), action=None, step=step_count, fuel=env.current_fuel)
-        time.sleep(0.5)
     
     while not done:
         action = student_agent.get_action(obs)
