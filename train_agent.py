@@ -1,12 +1,12 @@
 import numpy as np
 
 from tqdm import tqdm
-import matplotlib.pyplot as plt
 import pickle
 import time
 
 from model import Model
-from taxi_env import *
+from state import *
+from taxi_env import TaxiEnv
         
 def train(episodes=5000, alpha=0.1, gamma=0.99, epsilon_start=1.0, epsilon_end=0.1, decay_rate=0.9995):
     # The default parameters should allow learning, but you can still adjust them to achieve better training performance.
@@ -47,7 +47,7 @@ def train(episodes=5000, alpha=0.1, gamma=0.99, epsilon_start=1.0, epsilon_end=0
             # print(f"State: {state}, Action: {action}, Reward: {reward}, Next State: {next_state}")
             shaped_return += reward
             
-            target = reward + gamma * np.max(model.q_table[*next_state])
+            target = reward + gamma * np.max(model.q_table[next_state])
             model.update(state, action, target)
             
             state = next_state

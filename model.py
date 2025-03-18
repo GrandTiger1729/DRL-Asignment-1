@@ -9,10 +9,10 @@ class Model:
         self.alpha = lr
 
     def update(self, state, action, target):
-        self.q_table[*state, action] += self.alpha * (target - self.q_table[*state, action])
+        self.q_table[state][action] += self.alpha * (target - self.q_table[state][action])
 
     def get_action(self, state, epsilon):
         if np.random.rand() < epsilon:
             return np.random.choice(self.action_size)  # Explore.
         else:
-            return np.argmax(self.q_table[*state]).item()  # Exploit.
+            return np.argmax(self.q_table[state]).item()  # Exploit.
