@@ -3,3 +3,4 @@ requests
 argparse
 IPython
 numpy
+torch
