@@ -1,0 +1,20 @@
+[project]
+name = "drl-asignment-1"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "argparse>=1.4.0",
+    "gym>=0.26.2",
+    "ipython>=9.0.2",
+    "matplotlib>=3.10.1",
+    "requests>=2.32.3",
+    "torch>=2.6.0",
+    "tqdm>=4.67.1",
+]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=6.29.5",
+]
