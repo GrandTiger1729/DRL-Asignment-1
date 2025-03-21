@@ -15,15 +15,21 @@ def train(episodes=5000, alpha=0.1, gamma=0.99, epsilon_start=1.0, epsilon_end=0
     """
     env = TaxiEnv()
     
-    model = Model(get_state_size(), get_action_size(), lr=alpha)
+    model = Model(STATE_SIZE, ACTION_SIZE, lr=alpha)
     epsilon = epsilon_start
     shaped_rewards_per_episode = []
     actual_returns_per_episode = []
+    success_per_episode = []
     
     def reward_shaping(state, action, reward):
-        if reward == -0.1:
-            return 100
-        return -1000
+        shaped_reward = 0
+        if action in [0, 1, 2, 3] and state[3:7][action]:
+            shaped_reward -= 50
+        if (action == 4 and not state[7]) or (action == 5 and not state[8]):
+            shaped_reward -= 10000
+        if reward > 0:
+            shaped_reward += 1000
+        return shaped_reward
 
     for episode in tqdm(range(episodes)):
         obs, _ = env.reset()
@@ -31,6 +37,7 @@ def train(episodes=5000, alpha=0.1, gamma=0.99, epsilon_start=1.0, epsilon_end=0
 
         # Retrieve the agent's state directly from the environment.
         state = get_agent_state(obs)
+        # print(state, model.q_table.shape, sep="\n")
         step_count = 0
 
         done = False
@@ -39,6 +46,7 @@ def train(episodes=5000, alpha=0.1, gamma=0.99, epsilon_start=1.0, epsilon_end=0
         
         while not done:
             action = model.get_action(state, epsilon)
+            update_state(obs, action)
             obs, reward, done, _ = env.step(action)
             next_state = get_agent_state(obs)
             
@@ -47,6 +55,7 @@ def train(episodes=5000, alpha=0.1, gamma=0.99, epsilon_start=1.0, epsilon_end=0
             # print(f"State: {state}, Action: {action}, Reward: {reward}, Next State: {next_state}")
             shaped_return += reward
             
+            # print("[ok]", next_state, model.q_table[next_state].shape)
             target = reward + gamma * np.max(model.q_table[next_state])
             model.update(state, action, target)
             
@@ -62,12 +71,14 @@ def train(episodes=5000, alpha=0.1, gamma=0.99, epsilon_start=1.0, epsilon_end=0
         epsilon = max(epsilon_end, epsilon * decay_rate)
         shaped_rewards_per_episode.append(shaped_return)
         actual_returns_per_episode.append(actual_return)
+        success_per_episode.append(1 if env.current_fuel > 0 else 0)
 
         # Print progress every 100 episodes.
         if (episode + 1) % 100 == 0:
             shaped_mean = np.mean(shaped_rewards_per_episode[-100:])
             actual_mean = np.mean(actual_returns_per_episode[-100:])
-            print(f"Episode {episode + 1}/{episodes}, Total Reward: {shaped_mean:.8f}, Actual Reward: {actual_mean:.8f}, Epsilon: {epsilon:.3f}, Success Count: {sum([1 for r in actual_returns_per_episode[-100:] if r == -510])}")
+            success_rate = np.mean(success_per_episode[-100:])
+            print(f"Episode {episode + 1}/{episodes}, Total Reward: {shaped_mean:.8f}, Actual Reward: {actual_mean:.8f}, Epsilon: {epsilon:.3f}, Success Rate: {success_rate}")
 
     return model
 

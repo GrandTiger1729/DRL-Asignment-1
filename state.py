@@ -1,42 +1,47 @@
-# Direction for each station: (-1, 0, 1) for each axis, currently targeting station, obstacle test for adjacent cells (moved cell will be seen as obstacle), passenger and destination test
-_state_size = tuple([3] * 2 + [4] + [2] * 4 + [2] * 2)
-def get_state_size():
-    return _state_size
+import numpy as np
 
-_action_size = 6
-def get_action_size():
-    return _action_size
+BOARD_SIZE = 10
+
+# Direction for each station: (-1, 0, 1) for each axis, currently targeting station, obstacle test for adjacent cells (moved cell will be seen as obstacle), passenger and destination test and carrying
+STATE_SIZE = tuple([3] * 2 + [4] + [2] * 4 + [2] * 3)
+ACTION_SIZE = 6
+visited_actions = np.zeros((BOARD_SIZE, BOARD_SIZE, ACTION_SIZE), dtype=bool)
+
 
 _state = None
 def reset_state():
     global _state
     _state = None
 
+def update_state(obs, action):
+    global _state, visited_actions
+
+    visited_actions[obs[0], obs[1], action] = True
+    if action == 4: # PICKUP
+        _state[9] = 1
+    elif action == 5: # DROPOFF
+        _state[9] = 0
+
 def get_agent_state(obs):
     global _state
-    _state = tuple(obs[10:14])
-    return _state
-    # taxi_y, taxi_x = obs[0], obs[1]
-    # station_y = [obs[2], obs[4], obs[6], obs[8]]
-    # station_x = [obs[3], obs[5], obs[7], obs[9]]
-    # is_obstacle = [obs[10], obs[11], obs[12], obs[13]]
-    # passenger_look = obs[14]
-    # destination_look = obs[15]
+
+    taxi_y, taxi_x = obs[0], obs[1]
+    station_y = [obs[2], obs[4], obs[6], obs[8]]
+    station_x = [obs[3], obs[5], obs[7], obs[9]]
+    is_obstacle = [obs[11], obs[10], obs[12], obs[13]] # obs in north(1), south(0), east(2), west(3) order
+    passenger_look = obs[14]
+    destination_look = obs[15]
     
-    # carrying_passenger = _state[12] if _state is not None else 0
-    # station_observation = list(_state[13:]) if _state is not None else [0] * 4
+    carrying_passenger = _state[9] if _state is not None else 0
+    target_station = _state[4] if _state is not None else 0
+    passenger_test = int(passenger_look and not carrying_passenger and (taxi_y, taxi_x) in zip(station_y, station_x))
+    destination_test = int(destination_look and carrying_passenger and (taxi_y, taxi_x) in zip(station_y, station_x))
     
-    # if passenger_look or destination_look:
-    #     for i in range(4):
-    #         # if adjecent to the taxi
-    #         if station_observation[i] == 0 and abs(station_y[i] - taxi_y) + abs(station_x[i] - taxi_x) <= 1:
-    #             if not carrying_passenger and passenger_look:
-    #                 station_observation[i] = 2
-    #             elif destination_look:
-    #                 station_observation[i] = 3
-    #             else:
-    #                 station_observation[i] = 1
+    if station_y[target_station] == taxi_y and station_x[target_station] == taxi_x:
+        visited_actions.fill(False)
+        target_station = (target_station + 1) % 4
     
-    # next_state = [np.sign(y - taxi_y) for y in station_y] + [np.sign(x - taxi_x) for x in station_x] + [carrying_passenger] + is_obstacle + station_observation
-    # _state = tuple(next_state)
-    # return _state
+    next_state = [np.sign(station_y[target_station] - taxi_y), np.sign(station_x[target_station] - taxi_x)] + [target_station] + list(np.bitwise_or(is_obstacle, visited_actions[taxi_y, taxi_x, :4], dtype=int)) + [passenger_test, destination_test, carrying_passenger]
+    
+    _state = next_state
+    return tuple(_state)
