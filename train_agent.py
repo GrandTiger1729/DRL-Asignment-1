@@ -8,7 +8,7 @@ from model import Model
 from state import *
 from taxi_env import TaxiEnv
         
-def train(episodes=5000, alpha=0.1, gamma=0.99, epsilon_start=1.0, epsilon_end=0.1, decay_rate=0.9995):
+def train(episodes=5000, alpha=0.05, gamma=0.99, epsilon_start=1.0, epsilon_end=0.1, decay_rate=0.9995):
     # The default parameters should allow learning, but you can still adjust them to achieve better training performance.
     """
     ✅ Train a Q-learning agent using **PyTorch tensors**.
@@ -82,6 +82,6 @@ def train(episodes=5000, alpha=0.1, gamma=0.99, epsilon_start=1.0, epsilon_end=0
 
     return model
 
-model = train(episodes=5000)
+model = train(episodes=20000)
 with open("model.pkl", "wb") as f:
     pickle.dump(model, f)

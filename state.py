@@ -12,6 +12,7 @@ _state = None
 def reset_state():
     global _state
     _state = None
+    visited_actions.fill(False)
 
 def update_state(obs, action):
     global _state, visited_actions
