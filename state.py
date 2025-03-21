@@ -1,6 +1,5 @@
-# Direction for each station: (-1, 0, 1) for each axis, whether the square adjacent to the taxi is an obstacle, whether it is carrying a passenger, possible state for station (unknown, empty, passenger, destination)
-# _state_size = tuple([3] * 8 + [2] * 4 + [2] + [4] * 4)
-_state_size = tuple([2] * 4)
+# Direction for each station: (-1, 0, 1) for each axis, currently targeting station, obstacle test for adjacent cells (moved cell will be seen as obstacle), passenger and destination test
+_state_size = tuple([3] * 2 + [4] + [2] * 4 + [2] * 2)
 def get_state_size():
     return _state_size
 

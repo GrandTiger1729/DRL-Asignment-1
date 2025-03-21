@@ -3,7 +3,7 @@ import random
 import numpy as np
 
 class TaxiEnv():
-    def __init__(self, grid_size=5, fuel_limit=5000, obstacles_rate=0.3):
+    def __init__(self, grid_size=5, fuel_limit=5000, obstacles_rate=0.2):
         """
         Custom Taxi environment supporting different grid sizes.
         """
@@ -32,32 +32,28 @@ class TaxiEnv():
             neighbours.append((row, col + 1))
         return neighbours
 
-    def _has_path(self, start, end):
-        """Find the shortest path between two points using BFS."""
+    def _reachable_cells(self, start):
+        """Return the reachable cells from a starting position."""
         visited = set()
-        queue = [start]
-        while queue:
-            current = queue.pop(0)
-            if current == end:
-                return True
-            visited.add(current)
-            for neighbour in self._get_neighbours(current):
-                if neighbour not in visited and neighbour not in self.obstacles:
-                    queue.append(neighbour)
-        return False
+        stack = [start]
+        while stack:
+            pos = stack.pop()
+            if pos in visited:
+                continue
+            visited.add(pos)
+            stack.extend([n for n in self._get_neighbours(pos) if n not in visited and n not in self.obstacles])
+        return visited
 
     def reset(self):
         """Reset the environment, ensuring Taxi, passenger, and destination are not overlapping obstacles"""
         self.current_fuel = self.fuel_limit
         self.passenger_picked_up = False
         
-        
         success = False
         while not success:
             success = True
             
             self.obstacles = set(random.sample([(x, y) for x in range(self.grid_size) for y in range(self.grid_size)], k=int(self.grid_size * self.grid_size * self.obstacles_rate)))
-
             self.stations = random.sample([(x, y) for x in range(self.grid_size) for y in range(self.grid_size) if (x, y) not in self.obstacles], k=4)
             
             for i in range(4):
@@ -80,8 +76,11 @@ class TaxiEnv():
             possible_destinations = [s for s in self.stations if s != self.passenger_loc]
             self.destination = random.choice(possible_destinations)
             
-            if not (self._has_path(self.taxi_pos, self.passenger_loc) and self._has_path(self.passenger_loc, self.destination)):
-                success = False
+            reachable_cells = self._reachable_cells(self.taxi_pos)
+            for station in self.stations:
+                if station not in reachable_cells:
+                    success = False
+                    break
             
         return self.get_state(), {}
 
