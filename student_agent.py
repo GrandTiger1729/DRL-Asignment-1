@@ -19,7 +19,7 @@ def get_action(obs):
         target = -0.1 + reward_shaping(last_state, last_action) + 0.99 * np.max(model.q_table[state])
         model.update(last_state, last_action, target)
 
-    action = model.get_action(state, 0.03)
+    action = model.get_action(state, 0.01)
     resolve_state(obs, action)
 
     last_state = state
