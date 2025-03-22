@@ -33,13 +33,15 @@ def run_agent(agent_file, env_config, render=False):
     return total_reward
 
 if __name__ == "__main__":
-    env_config = {
-        "grid_size": BOARD_SIZE,
-        "fuel_limit": 5000
-    }
-    
+    import random
+    from tqdm import tqdm
     agent_scores = []
-    for t in range(100):
+    for t in tqdm(range(1000)):
+        env_config = {
+            "grid_size": random.randint(5, 10),
+            "fuel_limit": 5000,
+            "obstacles_rate": 0.1
+        }
         agent_score = run_agent("student_agent.py", env_config)
         agent_scores.append(agent_score)
     # agent_score = run_agent("student_agent.py", env_config, render=True)

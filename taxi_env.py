@@ -3,7 +3,7 @@ import random
 import numpy as np
 
 class TaxiEnv():
-    def __init__(self, grid_size=5, fuel_limit=5000, obstacles_rate=0.2):
+    def __init__(self, grid_size=7, fuel_limit=5000, obstacles_rate=0.2):
         """
         Custom Taxi environment supporting different grid sizes.
         """
