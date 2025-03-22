@@ -11,7 +11,7 @@ with open("model.pkl", "rb") as f:
 
 def get_action(obs):
     state = get_agent_state(obs)
-    action = model.get_action(state, 0)
+    action = model.get_action(state, 0.1)
     resolve_state(obs, action)
     return action
 

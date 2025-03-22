@@ -2,7 +2,6 @@ import numpy as np
 
 from tqdm import tqdm
 import pickle
-import time
 
 from model import Model
 from state import *
@@ -23,8 +22,8 @@ def train(episodes=5000, alpha=0.05, gamma=0.99, epsilon_start=1.0, epsilon_end=
     
     def reward_shaping(state, action, reward, next_state):
         shaped_reward = 0
-        # if action in [0, 1, 2, 3] and state[2 + action]:
-        #     shaped_reward -= 50
+        if action in [0, 1, 2, 3] and state[2 + action]:
+            shaped_reward -= 5
         if state[0:2] != (0, 0) and action in [4, 5]:
             shaped_reward -= 10
         # if action == 4 and not state[6]:
@@ -33,10 +32,8 @@ def train(episodes=5000, alpha=0.05, gamma=0.99, epsilon_start=1.0, epsilon_end=
         #     shaped_reward += 50
         # if action == 5 and not state[7]:
         #     shaped_reward -= 500
-        # if action == 5 and state[7] and not next_state[7]:
-            # shaped_reward += 250
-        # if reward > 0:
-        #     shaped_reward += 50000
+        # if action == 5 and state[7]:
+        #     shaped_reward += 250
         return reward + shaped_reward
 
     for episode in tqdm(range(episodes)):

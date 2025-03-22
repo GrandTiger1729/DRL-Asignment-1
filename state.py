@@ -2,10 +2,10 @@ import numpy as np
 
 BOARD_SIZE = 5
 
-# Direction for each station: (-1, 0, 1) for each axis, obstacle test for adjacent cells (moved cell will be seen as obstacle), passenger and destination test and carrying
-STATE_SIZE = tuple([3] * 2 + [2] * 4 + [2] * 3)
+# Direction for each station: (-1, 0, 1) for each axis, obstacle test for adjacent cells (empty is 0, obstacle is 1, tried cell is 2), passenger and destination test and carrying
+STATE_SIZE = tuple([3] * 2 + [3] * 4 + [2] * 3)
 ACTION_SIZE = 6
-visited_actions = np.zeros((BOARD_SIZE, BOARD_SIZE, 4), dtype=bool)
+visited_actions = np.zeros((10, 10, 4), dtype=int)
 target_id = 0
 target_y, target_x = None, None
 dropped_off = False
@@ -15,7 +15,7 @@ _state = None
 def reset_state():
     global _state, visited_actions, target_y, target_x, target_id, dropped_off, carrying
     _state = None
-    visited_actions.fill(False)
+    visited_actions.fill(0)
     target_id = 0
     target_y, target_x = None, None
     dropped_off = False
@@ -25,21 +25,26 @@ def resolve_state(obs, action):
     global _state, visited_actions, target_y, target_x, target_id, dropped_off, carrying
 
     taxi_y, taxi_x = obs[0], obs[1]
+    destination_look = obs[15]
+
+    destination_test = int(destination_look and carrying and (taxi_y, taxi_x) == (target_y, target_x))
 
     if action == 4: # PICKUP
-        if target_y == taxi_y and target_x == taxi_x and not carrying:
-            visited_actions.fill(False)
+        if target_y == taxi_y and target_x == taxi_x:
             if not dropped_off:
                 target_id = (target_id + 1) % 4
+            visited_actions.fill(0)
             carrying = True
             dropped_off = False
     elif action == 5: # DROPOFF
+        if destination_test:
+            reset_state()
         if carrying:
             dropped_off = True
             carrying = False
             target_y, target_x = taxi_y, taxi_x
     else: # MOVE
-        visited_actions[obs[0], obs[1], action] = True
+        visited_actions[taxi_y, taxi_x, action] = 2
 
 def get_agent_state(obs):
     global _state, visited_actions, target_y, target_x, target_id, dropped_off, carrying
@@ -56,8 +61,13 @@ def get_agent_state(obs):
     
     passenger_test = int(passenger_look and not carrying and (taxi_y, taxi_x) == (target_y, target_x))
     destination_test = int(destination_look and carrying and (taxi_y, taxi_x) == (target_y, target_x))
+
+    tried_actions = list(visited_actions[taxi_y, taxi_x])
+    for i in range(4):
+        if is_obstacle[i]:
+            tried_actions[i] = 1
     
-    next_state = [np.sign(target_y - taxi_y), np.sign(target_x - taxi_x)] + list(np.bitwise_or(is_obstacle, visited_actions[taxi_y, taxi_x], dtype=int)) + [passenger_test, destination_test, int(carrying)]
+    next_state = [np.sign(target_y - taxi_y), np.sign(target_x - taxi_x)] + tried_actions + [passenger_test, destination_test, int(carrying)]
     
     _state = next_state
     return tuple(_state)
