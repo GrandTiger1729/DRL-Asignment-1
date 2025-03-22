@@ -34,7 +34,7 @@ def run_agent(agent_file, env_config, render=False):
 
 if __name__ == "__main__":
     env_config = {
-        "grid_size": 10,
+        "grid_size": BOARD_SIZE,
         "fuel_limit": 5000
     }
     

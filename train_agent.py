@@ -13,7 +13,7 @@ def train(episodes=5000, alpha=0.05, gamma=0.99, epsilon_start=1.0, epsilon_end=
     """
     ✅ Train a Q-learning agent using **PyTorch tensors**.
     """
-    env = TaxiEnv()
+    env = TaxiEnv(grid_size=BOARD_SIZE)
     
     model = Model(STATE_SIZE, ACTION_SIZE, lr=alpha)
     epsilon = epsilon_start
@@ -21,15 +21,21 @@ def train(episodes=5000, alpha=0.05, gamma=0.99, epsilon_start=1.0, epsilon_end=
     actual_returns_per_episode = []
     success_per_episode = []
     
-    def reward_shaping(state, action, reward):
+    def reward_shaping(state, action, reward, next_state):
         shaped_reward = 0
-        if action in [0, 1, 2, 3] and state[3:7][action]:
-            shaped_reward -= 50
-        if (action == 4 and not state[7]) or (action == 5 and not state[8]):
-            shaped_reward -= 10000
-        if reward > 0:
-            shaped_reward += 1000
-        return shaped_reward
+        # if action in [0, 1, 2, 3] and state[2 + action]:
+        #     shaped_reward -= 50
+        if action == 4 and not state[7]:
+            shaped_reward -= 100
+        if action == 4 and state[7] and not next_state[7]:
+            shaped_reward += 50
+        if action == 5 and not state[8]:
+            shaped_reward -= 5000
+        if action == 5 and state[8] and not next_state[8]:
+            shaped_reward += 2500
+        # if reward > 0:
+        #     shaped_reward += 50000
+        return reward + shaped_reward
 
     for episode in tqdm(range(episodes)):
         obs, _ = env.reset()
@@ -37,7 +43,6 @@ def train(episodes=5000, alpha=0.05, gamma=0.99, epsilon_start=1.0, epsilon_end=
 
         # Retrieve the agent's state directly from the environment.
         state = get_agent_state(obs)
-        # print(state, model.q_table.shape, sep="\n")
         step_count = 0
 
         done = False
@@ -51,22 +56,15 @@ def train(episodes=5000, alpha=0.05, gamma=0.99, epsilon_start=1.0, epsilon_end=
             next_state = get_agent_state(obs)
             
             actual_return += reward
-            reward = reward_shaping(state, action, reward)
-            # print(f"State: {state}, Action: {action}, Reward: {reward}, Next State: {next_state}")
+            reward = reward_shaping(state, action, reward, next_state)
             shaped_return += reward
             
-            # print("[ok]", next_state, model.q_table[next_state].shape)
             target = reward + gamma * np.max(model.q_table[next_state])
             model.update(state, action, target)
             
             state = next_state
             step_count += 1
             
-            # print(f"State: {state}")
-            # env.render_env((obs[0], obs[1]), action=action, step=step_count, fuel=env.current_fuel)
-
-        # print("Total Reward:", shaped_return)
-        
         # Decay epsilon over time to reduce exploration.
         epsilon = max(epsilon_end, epsilon * decay_rate)
         shaped_rewards_per_episode.append(shaped_return)
@@ -78,10 +76,10 @@ def train(episodes=5000, alpha=0.05, gamma=0.99, epsilon_start=1.0, epsilon_end=
             shaped_mean = np.mean(shaped_rewards_per_episode[-100:])
             actual_mean = np.mean(actual_returns_per_episode[-100:])
             success_rate = np.mean(success_per_episode[-100:])
-            print(f"Episode {episode + 1}/{episodes}, Total Reward: {shaped_mean:.8f}, Actual Reward: {actual_mean:.8f}, Epsilon: {epsilon:.3f}, Success Rate: {success_rate}")
+            print(f"Episode {episode + 1}/{episodes}, Total Return: {shaped_mean:.8f}, Actual Return: {actual_mean:.8f}, Epsilon: {epsilon:.3f}, Success Rate: {success_rate}")
 
     return model
 
-model = train(episodes=20000)
+model = train(episodes=5000)
 with open("model.pkl", "wb") as f:
     pickle.dump(model, f)
