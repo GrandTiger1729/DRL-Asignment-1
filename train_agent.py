@@ -25,14 +25,16 @@ def train(episodes=5000, alpha=0.05, gamma=0.99, epsilon_start=1.0, epsilon_end=
         shaped_reward = 0
         # if action in [0, 1, 2, 3] and state[2 + action]:
         #     shaped_reward -= 50
-        if action == 4 and not state[7]:
-            shaped_reward -= 100
-        if action == 4 and state[7] and not next_state[7]:
-            shaped_reward += 50
-        if action == 5 and not state[8]:
-            shaped_reward -= 5000
-        if action == 5 and state[8] and not next_state[8]:
-            shaped_reward += 2500
+        if state[0:2] != (0, 0) and action in [4, 5]:
+            shaped_reward -= 10
+        # if action == 4 and not state[6]:
+        #     shaped_reward -= 100
+        # if action == 4 and state[6] and not next_state[6]:
+        #     shaped_reward += 50
+        # if action == 5 and not state[7]:
+        #     shaped_reward -= 500
+        # if action == 5 and state[7] and not next_state[7]:
+            # shaped_reward += 250
         # if reward > 0:
         #     shaped_reward += 50000
         return reward + shaped_reward
@@ -51,7 +53,7 @@ def train(episodes=5000, alpha=0.05, gamma=0.99, epsilon_start=1.0, epsilon_end=
         
         while not done:
             action = model.get_action(state, epsilon)
-            update_state(obs, action)
+            resolve_state(obs, action)
             obs, reward, done, _ = env.step(action)
             next_state = get_agent_state(obs)
             
