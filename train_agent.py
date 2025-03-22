@@ -63,6 +63,6 @@ def train(episodes=5000, alpha=0.05, gamma=0.99, epsilon_start=1.0, epsilon_end=
 
     return model
 
-model = train(episodes=5000)
+model = train(episodes=6000)
 with open("model.pkl", "wb") as f:
     pickle.dump(model, f)

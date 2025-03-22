@@ -32,7 +32,7 @@ def resolve_state(obs, action):
     if action == 4: # PICKUP
         if target_y == taxi_y and target_x == taxi_x:
             if not dropped_off:
-                target_id = (target_id + 1) % 4
+                target_id = np.random.choice([i for i in range(4) if i != target_id])
             visited_actions.fill(0)
             carrying = True
             dropped_off = False
@@ -72,16 +72,23 @@ def get_agent_state(obs):
     _state = next_state
     return tuple(_state)
 
-def reward_shaping(state, action, reward=0):
+def reward_shaping(state, action, reward=None):
     shaped_reward = 0
+    if reward is None:
+        reward = -0.1
+        if action in [0, 1, 2, 3]:
+            if state[2 + action] == 1:
+                reward -= 5
+    
     if action in [0, 1, 2, 3]:
         if state[2 + action] == 1:
-            shaped_reward -= 5
+            shaped_reward -= 3
         elif state[2 + action] == 2:
-            shaped_reward -= 2
+            shaped_reward -= 1.5
         else:
-            shaped_reward += 0.01
+            shaped_reward += 0.02
     
     if state[0:2] != (0, 0) and action in [4, 5]:
         shaped_reward -= 10
+
     return reward + shaped_reward
