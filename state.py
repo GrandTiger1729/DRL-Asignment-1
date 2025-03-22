@@ -71,3 +71,11 @@ def get_agent_state(obs):
     
     _state = next_state
     return tuple(_state)
+
+def reward_shaping(state, action, reward=0):
+    shaped_reward = 0
+    if action in [0, 1, 2, 3] and state[2 + action]:
+        shaped_reward -= 5
+    if state[0:2] != (0, 0) and action in [4, 5]:
+        shaped_reward -= 10
+    return reward + shaped_reward
