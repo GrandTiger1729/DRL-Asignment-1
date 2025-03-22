@@ -16,7 +16,7 @@ def get_action(obs):
     state = get_agent_state(obs)
 
     if last_state is not None:
-        target = reward_shaping(last_state, last_action) + 0.99 * np.max(model.q_table[state])
+        target = -0.1 + reward_shaping(last_state, last_action) + 0.99 * np.max(model.q_table[state])
         model.update(last_state, last_action, target)
 
     action = model.get_action(state, 0.1)

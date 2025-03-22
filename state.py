@@ -74,8 +74,12 @@ def get_agent_state(obs):
 
 def reward_shaping(state, action, reward=0):
     shaped_reward = 0
-    if action in [0, 1, 2, 3] and state[2 + action]:
-        shaped_reward -= 5
+    if action in [0, 1, 2, 3]:
+        if state[2 + action] == 1:
+            shaped_reward -= 5
+        elif state[2 + action] == 2:
+            shaped_reward -= 2
+    
     if state[0:2] != (0, 0) and action in [4, 5]:
         shaped_reward -= 10
     return reward + shaped_reward
