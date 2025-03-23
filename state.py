@@ -112,6 +112,6 @@ def reward_shaping(state, action, reward=None):
             shaped_reward += 0.02
     
     if state[0:2] != (0, 0) and action in [4, 5]:
-        shaped_reward -= 20
+        shaped_reward -= 10
 
     return reward + shaped_reward
