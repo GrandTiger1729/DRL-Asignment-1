@@ -20,10 +20,10 @@ def get_action(obs):
         model.update(last_state, last_action, target)
 
     action = model.get_action(state, 0)
-    resolve_state(obs, action)
     if action == 5 and (obs[15] and carrying and (obs[0], obs[1]) == (target_y, target_x)):
         with open("model.pkl", "wb") as f:
             pickle.dump(model, f)
+    resolve_state(obs, action)
 
     last_state = state
     last_action = action
