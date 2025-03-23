@@ -97,17 +97,17 @@ def reward_shaping(state, action, reward=None):
     if reward is None:
         reward = -0.1
         if action in [0, 1, 2, 3] and state[2 + action] == 1:
-            reward -= 50000
+            reward -= 5
         if action in [4, 5] and state[0:2] != (0, 0):
-            reward -= 100000
+            reward -= 10
         if (action == 4 and state[6] == 1) or (action == 5 and state[6] == 0):
-            reward -= 100000
+            reward -= 10
     
     if action in [0, 1, 2, 3]:
         if state[2 + action] == 1:
             shaped_reward -= 3
         elif state[2 + action] == 2:
-            shaped_reward -= 1.5
+            shaped_reward -= 0.5
         else:
             shaped_reward += 0.02
     
