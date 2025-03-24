@@ -36,7 +36,7 @@ if __name__ == "__main__":
     import random
     from tqdm import tqdm
     agent_scores = []
-    for t in tqdm(range(1000)):
+    for t in tqdm(range(50)):
         env_config = {
             "grid_size": random.randint(5, 10),
             "fuel_limit": 5000,

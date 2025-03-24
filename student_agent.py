@@ -8,6 +8,7 @@ from model import Model
 
 with open("model.pkl", "rb") as f:
     model: Model = pickle.load(f)
+    model.alpha = 1
 last_state = None
 last_action = None
 
@@ -19,7 +20,10 @@ def get_action(obs):
         target = reward_shaping(last_state, last_action) + 0.99 * np.max(model.q_table[state])
         model.update(last_state, last_action, target)
 
-    action = model.get_action(state, 0.01)
+    action = model.get_action(state, 0)
+    if action == 5 and obs[15] and carrying and (obs[0], obs[1]) == (target_y, target_x):
+        with open("model.pkl", "wb") as f:
+            pickle.dump(model, f)
     resolve_state(obs, action)
 
     last_state = state
